@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta content="text/html; charset=UTF-8" http-equiv="content-type" pageEncoding="UTF-8"/>
+		<meta http-equiv="Content-Language" content="zh-CN" />
+		<meta name="description" content="俄罗斯方块"/>
+		<meta http-equiv="keywords" content="俄罗斯方块"/>
+		<link rel="icon" type="image/png" id="favicon" href="images/logo.png"/>
+		<link rel="stylesheet" type="text/css" href="css/main.css"/>
+		<script type="text/javascript" src="js/brush.js"></script>
+		<script type="text/javascript" src="js/map.js"></script>
+		<script type="text/javascript" src="js/tetris.js"></script>
+		<script type="text/javascript" src="js/letter.js"></script>
+		<script type="text/javascript" src="js/main.js"></script>
+		<title>HTML5-俄罗斯方块游戏</title>
+		<script type="text/javascript">
+			var main = new Main();
+			var isStart = false;
+			var isPause = false;
+			function gameInit(){
+				main.init();
+			}
+			function gameStart(){
+				main.playClick();
+				if (isStart){//stop
+					isStart = false;
+					main.gameEnd();
+					document.getElementById("menu_start").innerHTML = "Start";
+				} else {//start
+					isStart = true;
+					main.gameStart();
+					document.getElementById("menu_start").innerHTML = "End";
+				}
+			}
+			function gamePause(){
+				if (isPause){//resume
+					isPause = false;
+					main.playResume();
+					main.gameResume();
+					document.getElementById("menu_pause").innerHTML = "Pause";
+				} else {//pause
+					isPause = true;
+					main.playClick();
+					main.gamePause();
+					document.getElementById("menu_pause").innerHTML = "Resume";
+				}
+			}
+		</script>
+	</head>
+	<body onload="gameInit()">
+		<div id="container">
+			<div id="sidebar">
+				<div id="welcome" title="Happy Birthday to You">
+					<b>Have&nbsp;&nbsp;&nbsp;<br/>
+          &nbsp;&nbsp;&nbsp;Fun~</b>
+				</div>
+				<ul id="menu">
+					<li><a id="menu_start" href="javascript:void(0)" onclick="gameStart()">Start</a></li>
+					<li><a id="menu_pause" href="javascript:void(0)" onclick="gamePause()">Pause</a></li>
+					<li><a id="menu_pause" href="javascript:void(0)"
+						title="HTML5俄罗斯方块游戏 - 余亚/2014/2/14">About</a></li>
+					<li><a id="menu_pause" href="/"
+						title="Goto leftgeek.com">Home</a></li>
+				</ul>
+				<div id="game_control">
+				键盘操作:&nbsp;&nbsp;<br/>
+				旋转:&nbsp;&nbsp;&nbsp;&nbsp;&uarr;&nbsp;&nbsp;&nbsp;<br/>
+				移动:&nbsp;&larr;&nbsp;&rarr;<br/>
+				加速:&nbsp;&nbsp;&nbsp;&nbsp;&darr;&nbsp;&nbsp;&nbsp;
+				</div>
+				<div>
+					<audio id="level_up" src="audio/level_up.ogg" preload="auto"></audio>
+					<audio id="click" src="audio/click.wav" preload="auto"></audio>
+					<audio id="move" src="audio/move.wav" preload="auto"></audio>
+					<audio id="dead" src="audio/go_on.wav" preload="auto"></audio>
+					<audio id="resume" src="audio/resume.wav" preload="auto"></audio>
+					<audio id="clear" src="audio/clear.wav" preload="auto"></audio>
+					<audio id="game_pass" src="audio/game_pass.wav" preload="auto"></audio>
+				</div>
+				
+			</div>
+			<div id="wrapper">
+				<div id="game_board" class="left">
+					<div id="header">
+						<canvas id="preview" width="112" height="112"></canvas>
+					</div>
+					<div id="main">
+						<canvas id="board" width="336" height="504"></canvas>
+					</div>
+				</div>
+				<div id="message_board" class="right">
+					<div id="notebook">
+						<canvas id="paper" width="580" height="460"></canvas>
+					</div>
+					<div id="message_box">
+						<div id="message">想知道我说的什么吗，花几分钟时间把游戏通关吧！</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
