@@ -8,6 +8,14 @@ Main.prototype.letterFactory = new LetterFactory();
 Main.prototype.currentLetter = 0;
 Main.prototype.currentType = 0;//方块类型
 Main.prototype.currentState = 0;//方块状态
+
+Main.prototype.enableAI = false;
+Main.prototype.AITargetTetrisState = 0;//AI计算的目标方块姿态
+Main.prototype.AITargetX = 0;//AI计算的目标方块水平位置
+Main.prototype.increaseBlocks = 0;
+Main.prototype.reduceBadBlocks = 1;
+Main.prototype.decreaseHeight = 2;
+
 Main.prototype.cx = 0;//方块左上角x坐标
 Main.prototype.cy = 0;//方块左上角y坐标
 Main.prototype.nextType = 0;//下一个方块类型
@@ -28,13 +36,16 @@ Main.prototype.init = function(){
 	//初始化画笔
 	//this.brush = new Brush();//画主游戏方块区
 	
-	if (!this.brush.init("board", 26, "#AAAAAA")){
+	//if (!this.brush.init("board", 26, "#AAAAAA")){
+	if (!this.brush.init("board", 26, "#CCC")){
 		alert("HTML5 is not supported!");
 		return false;
 	}
 	//this.nextBrush = new Brush();//画下一个方块区
-	this.nextBrush.init("preview", 26, "#AAAAAA");
-	this.letterBrush.init("paper", 18, "#AAAAAA")
+	//this.nextBrush.init("preview", 26, "#AAAAAA");
+	//this.letterBrush.init("paper", 18, "#AAAAAA")
+	this.nextBrush.init("preview", 26, "#CCC");
+	this.letterBrush.init("paper", 18, "#CCC")
 	//初始化地图
 	//this.map = new Map();
 	this.map.init(18, 12);
@@ -100,6 +111,321 @@ Main.prototype.keyDown = function(e){
 			break;
 	}
 };
+
+//Tetris-AI
+//判断指定方块是否允许存在于(移动到)地图的指定x,y处
+Main.prototype.canMove = function(tetris, x, y){
+  var row, col;
+  for (row = 0; row < 4; row++){
+    for (col = 0; col < 4; col++){
+      if ((this.map.getMapState(row + y, col + x) != 0)
+          && (tetris[row * 4 + col] != 0)){
+        return false;
+      }
+    }
+  }
+  return true;
+};
+//计算指定方块所在投影区间内的所有列的坏格子数量
+//但是如果堆积的块高度太高后,再考虑压在底层的坏块就没意义了
+//所以只考虑一定范围内的坏块数量
+Main.prototype.countBadColBlock = function(tetris, x, y){
+  var numBadBlock = 0;
+  var row, col;
+  var maxDepth;
+  for (col = 0; col < 4; col++){
+    row = 0;
+    //跳过所有空白格子,找到第一个非空白的格子
+    while (tetris[row * 4 + col] == 0){
+      row++;
+    }
+    //从row+1表示的垂直位置开始,一直到地图底部,数其中的空白格子数量
+    //这就是坏格子的数量
+    //但是由于该方块还没到达指定地点,因此需要分开计算
+    row++;
+    while (row < 4){
+      if ((tetris[row * 4 + col] == 0)
+        && (this.map.getMapState(y + row, x + col) == 0)){
+        numBadBlock++;
+      }
+      row++;
+    }
+    maxDepth = Math.min(row, this.map.getRowCount());
+    //再计算方块下面的地图上的空位置
+    /*while (row < maxDepth){
+      if (this.map.getMapState(y + row, x + col) == 0){
+        numBadBlock++;
+      }
+      row++;
+    }*/
+  }
+  return numBadBlock;
+};
+Main.prototype.evaluatePriority = function(){
+  var topPriority = Main.prototype.reduceBadBlocks;
+  var depth = 0;
+  while ((depth < this.map.getRowCount())
+    && (this.map.rowBlockCount[depth] == 0)){
+    depth++;
+  }
+  //根据块的堆积高度来决定优先级
+  if (depth <= this.map.getRowCount() / 3){
+    topPriority = Main.prototype.decreaseHeight;
+  } else if (depth <= this.map.getRowCount() * 2 / 3){
+    topPriority = Main.prototype.reduceBadBlocks;
+    //topPriority = Main.prototype.increaseBlocks;
+  }
+  return topPriority;
+};
+//方块第一个不是全0的行,用来计算它占用的高度
+Main.prototype.countTetrisFirstRow = function(tetris){
+  var row;
+  for (row = 0; row < 4; row++){
+    if ((tetris[row * 4] == 0)
+        && (tetris[row * 4 + 1] == 0)
+        && (tetris[row * 4 + 2] == 0)
+        && (tetris[row * 4 + 3] == 0)){
+      row++;
+    } else {
+      break;
+    }
+  }
+  return row;
+};
+//方块第一个不是全0的列,用来计算它的起点
+Main.prototype.countTetrisFirstCol = function(tetris){
+  var col;
+  for (col = 0; col < 4; col++){
+    if ((tetris[col] == 0)
+        && (tetris[4 + col] == 0)
+        && (tetris[2 * 4 + col] == 0)
+        && (tetris[3 * 4 + col] == 0)){
+      col++;
+    } else {
+      break;
+    }
+  }
+  return col;
+};
+
+//计算某个方块在指定行的非空格子数量
+Main.prototype.countRowBlockofTetris = function(tetris, row){
+  var numRowBlock = 0;
+  var col;
+  for (col = 0; col < 4; col++){
+    if (tetris[row * 4 + col] != 0){
+      numRowBlock++;
+    }
+  }
+  return numRowBlock;
+};
+
+//计算某个方块落到指定位置后,计算可清除的行数
+Main.prototype.countRows2Clear = function(tetris, y){
+  var numRowsCanClear = 0;
+  var numRowBlock;
+  var row;
+  for (row = 0; row < 4 && (y + row < this.map.getRowCount()); row++){
+    //既然方块能够到达此处,说明它能够填补上此处的间隙
+    //那么直接根据填补后的总数量来判断该行是否被填满
+    numRowBlock = this.map.rowBlockCount[y + row]
+      + Main.prototype.countRowBlockofTetris(tetris, row);
+    if (numRowBlock == this.map.getColCount()){
+      numRowsCanClear++;
+    }
+  }
+  return numRowsCanClear;
+};
+
+Main.prototype.countTetrisRowBlock = function(tetris, y){
+  var numRowBlock = 0;
+  var row;
+  for (row = 0; row < 4; row++){
+    if (y + row >= this.map.getRowCount()){
+      break;
+    }
+    //既然方块能够到达此处,说明它能够填补上此处的间隙
+    //那么直接根据填补后的总数量来判断该行是否被填满
+    numRowBlock += this.map.rowBlockCount[y + row]
+      + this.countRowBlockofTetris(tetris, row);
+  }
+  return numRowBlock;
+};
+
+Main.prototype.TetrisAI = function(){
+  var targetTetrisState = this.currentState;  //目标方块的姿态
+  var targetX = 0; //目标方块的水平下落位置
+  //var targetTetrisArray = new Array();//目标的方块存放在这里
+  //var targetXArray = new Array();//每个目标方块的水平下落位置
+  //var maxRowCanClear = 0;//能够清除的最大行数
+  var maxRowBlock = 0;//最大的非空格子数量
+  var targetBadBlocks = 1000;  //最小的坏格子数量
+  var targetDepth = 0; //目标方块在指定水平位置产生的整体深度(距离顶部的高度)
+  var targetRows2Clear = 0;
+
+  //对于给定的方块,它有4种形态
+  /*var tetris0 = this.tetrisFactory.getTetris(this.currentType, 0);
+    var tetris1 = this.tetrisFactory.getTetris(this.currentType, 1);
+    var tetris2 = this.tetrisFactory.getTetris(this.currentType, 2);
+    var tetris3 = this.tetrisFactory.getTetris(this.currentType, 3);*/
+    //从左到右考察所有落地地点
+  //对于指定落地地点的col,看它的最高点row位置,以判断方块的落地地点row
+  var x, y; //考察的方块水平和垂直位置
+  var tetrisState;
+  var row, col, i;
+  /*var allTetris = new Array(4);
+  for (i = 0; i < 4; i++){
+    allTetris[i] = this.tetrisFactory.getTetris(this.currentType,
+        (this.currentState + i) % 4);
+  }*/
+
+  //考察每一种方块,在每种水平位置的收益
+  var tetris;
+  //Main.prototype.showMessage("ai1:" + this.currentType + ", " + this.currentState);
+  for (i = 0; i < 4; i++){
+    tetrisState = (this.currentState + i) % 4;
+    tetris = this.tetrisFactory.getTetris(this.currentType, tetrisState);
+    //先按x(水平位置)考察,从方块的第一列不为0的开始
+
+    for (x = -3; x < this.map.getColCount() + 3; x++){
+      //再判断方块能够下落到的y(垂直位置)
+      y = this.cy;  //方块一直在下落
+      if (y < 0){
+        y = 0;
+      }
+  //Main.prototype.showMessage("ai1:" + x + ", " + y);
+      //if (!Main.prototype.canMove(allTetris[i], x, y)){
+      if (!Main.prototype.canMove(tetris, x, y)){
+        continue;
+      }
+      //方块最大宽度为4,判断这块空间是不是全空,如果全空就可以一直往下掉
+      //方块下方开始,所以得y+4
+      while (((y + 4) < this.map.getRowCount())){
+        var px = x;
+        if (x < 0){
+          px = 0;
+        }
+        while (px < x + 4){
+          if (!this.map.getMapState(y + 4, px)){
+            px++;
+          } else {
+            break;
+          }
+        }
+        if (px == x + 4){
+          y++;
+        } else {
+          break;
+        }
+      }
+      /*while (((y + 4) < this.map.getRowCount())
+        && (this.map.getMapState(y + 4, x) == 0)
+        && (this.map.getMapState(y + 4, x + 1) == 0)
+        && (this.map.getMapState(y + 4, x + 2) == 0)
+        && (this.map.getMapState(y + 4, x + 3) == 0)){
+        y++;
+      }*/
+      //此时地图的垂直位置y开始的地方已经存在非空的格子了
+      //需要做更加精细的判断
+      while ((y < this.map.getRowCount())
+          //&& Main.prototype.canMove(allTetris[i], x, y)){
+          && Main.prototype.canMove(tetris, x, y + 1)){//这是看是否能够往下移动(下落)
+        y++;
+      }
+
+      //此时的y就是方块在x处最终能够下落到的垂直位置
+      //记录到此时的x和y
+      //评估某个姿态的方块落在某个位置时能够产生的收益
+      //包括能够消除的行数量,产生的坏格子数量(根据水平投影范围),等效方块增量,整体的高度
+      //(1)先计算能够消除的行数量
+      /*var numRowBlockArray = Main.prototype.countRowBlock(allTetris[i], y);
+      var numRowCanClear = 0;
+      for (row = 0; row < 4; row++){
+        if (numRowBlockArray[row] == this.map.getColCount()){
+          numRowCanClear++;
+        }
+      }*/
+      //简化版:直接选择方块所在的所有行的总格子数最多的
+      //因为这意味着产生的消除行的数量也可能是最多的
+      //var numTetrisRowBlock = Main.prototype.countTetrisRowBlock(allTetris[i], y);
+      var numTetrisRowBlock = this.countTetrisRowBlock(tetris, y);
+      var numBadBlocks = this.countBadColBlock(tetris, x, y);
+      var depth = y + this.countTetrisFirstRow(tetris);
+
+      var updateTetris = false;//是否替换方块方案
+      //优先选择能够消除的行数最多的
+      var rows2Clear = this.countRows2Clear(tetris, y);  
+      if (rows2Clear > targetRows2Clear){
+        updateTetris = true;
+      } else {
+        //其次选择能够填补最多格子的
+        if (maxRowBlock <= numTetrisRowBlock){
+          if (maxRowBlock < numTetrisRowBlock
+            && (numBadBlocks <= targetBadBlocks)){
+            updateTetris = true;
+          } else {
+            //最后再根据堆积的方块高度,选择是降低高度(提高深度)还是减少坏格子优先
+            var topPriority = this.evaluatePriority();
+            if ((topPriority == Main.prototype.decreaseHeight)
+                && (depth >= targetDepth)){
+              if (depth > targetDepth){
+                updateTetris = true;
+              } else if (numBadBlocks < targetBadBlocks){
+                updateTetris = true;
+              }
+            } else if ((topPriority == Main.prototype.reduceBadBlocks)
+              && (numBadBlocks <= targetBadBlocks)){
+              if (numBadBlocks < targetBadBlocks){
+                updateTetris = true;
+              } else if (depth > targetDepth){
+                updateTetris = true;
+              }
+            }
+          }
+        }
+      }
+
+      if (updateTetris){
+        maxRowBlock = numTetrisRowBlock;
+        targetX = x;
+        targetTetrisState = tetrisState;
+        targetBadBlocks = numBadBlocks;
+        targetDepth = depth;
+        /*Main.prototype.appendMessage("; replace: " + maxRowBlock
+          + ", " + targetX + "," + targetTetrisState + ","
+          + targetBadBlocks + "," + targetDepth);*/
+      }
+    }
+  }
+  Main.prototype.AITargetTetrisState = targetTetrisState;
+  Main.prototype.AITargetX = targetX;
+};
+
+Main.prototype.AIChangeTetrisState = function(){
+  var i;
+  //至此已经获取到了targetX和targetTetrisState
+  //开始对当前的方块进行姿势调整和移动
+  for (i = Main.prototype.currentState; i != Main.prototype.AITargetTetrisState; i = (i + 1) % 4){
+		Main.prototype.switchState();
+  }
+};
+
+Main.prototype.AIMoveTetris = function(){
+  var x;
+  if (Main.prototype.cx < Main.prototype.AITargetX){
+    //往右移动
+    for (x = Main.prototype.cx; x < Main.prototype.AITargetX; x++){
+      Main.prototype.moveRight();
+    }
+  } else if (Main.prototype.cx > Main.prototype.AITargetX){
+    //往左移动
+    for (x = Main.prototype.cx; x > Main.prototype.AITargetX; x--){
+      Main.prototype.moveLeft();
+    }
+  }
+};
+//AI end
+
 
 Main.prototype.moveLeft = function(){
 	if (this.cx > -4){
@@ -185,7 +511,7 @@ Main.prototype.moveDown = function(){
 			Main.prototype.gameStop = true;
 			//show dead message
 			this.playDead();
-			this.showMessage("很遗憾，游戏失败了。生日快乐，再接再厉!");
+			this.showMessage("很遗憾，游戏失败了。生日快乐，又长大了一岁，必须要比之前更加努力才行啊！(玩游戏也是，亚哈哈！)");
 			clearInterval(Main.prototype.timer);
 		} else {
 			//将该方块画到地图中并判断消行、创建新块
@@ -216,7 +542,30 @@ Main.prototype.canDrop = function(){
 //方块下落
 Main.prototype.drop = function(){
 	if (!Main.prototype.gameStop){
-		Main.prototype.moveDown();
+    if (Main.prototype.enableAI){
+      if (Main.prototype.cy >= 0){
+        if (Main.prototype.currentState != Main.prototype.AITargetTetrisState){
+          Main.prototype.AIChangeTetrisState();
+        }
+        if (Main.prototype.cx != Main.prototype.AITargetX){
+          Main.prototype.AIMoveTetris();
+        }
+        //speedup
+        var i = Main.prototype.cy;
+        while ((i < Main.prototype.map.getRowCount() - 4)
+            && (Main.prototype.map.rowBlockCount[i++] == 0)){
+          Main.prototype.moveDown();
+        }
+        Main.prototype.moveDown();
+      } else {
+        //speedup
+        for (var i = Main.prototype.cy; i < 0; i++){
+          Main.prototype.moveDown();
+        }
+    }
+    } else {
+      Main.prototype.moveDown();
+    }
 	}	
 };
 //检查是否可以消行
@@ -224,13 +573,28 @@ Main.prototype.checkClear = function(){
 	var row, col;
 	var result = true;
 	for (row = 0; row < 4; row++){
-		result = true;
+    this.map.rowBlockCount[this.cy + row] += 
+      Main.prototype.countRowBlockofTetris(this.currentTetris, row);
+    if (this.map.rowBlockCount[this.cy + row] == this.map.getColCount()){
+      result = true;
+      //消除了某一行后,数组记录的行格子数量数据都得往下移动
+      var i;
+      for (i = this.cy + row; i > 0; i--){
+        this.map.rowBlockCount[i] = this.map.rowBlockCount[i - 1];
+        if (this.map.rowBlockCount[i] == 0){
+          break;
+        }
+      }
+    } else {
+      result = false;
+    }
+		/*result = true;
 		for (col = 0; col < this.map.getColCount(); col++){
 			if (this.map.getMapState(row + this.cy, col) == 0){//this line isn't full
 				result = false;
 				break;
 			}
-		}
+		}*/
 		if (result && (!Main.prototype.gameStop)){//超过20行（通关后）就停止判定
 			if (this.map.clearRow(this.brush, row + this.cy)){
 				this.playClear();
@@ -296,9 +660,19 @@ Main.prototype.newTetris = function(){
 	//初始化下一个方块	
 	this.makeNextTetris();
 	this.tetrisFactory.drawNextTetris(this.nextTetris, this.nextBrush, 0, 0);
+
+  if (Main.prototype.enableAI){
+    //启动AI,计算方块姿态与下落位置
+    Main.prototype.TetrisAI();
+  }
 };
 //开始游戏
-Main.prototype.gameStart = function(){
+Main.prototype.gameStart = function(enable_ai){
+  if (enable_ai == 1){
+    Main.prototype.enableAI = true;
+  } else {
+    Main.prototype.enableAI = false;
+  }
 	//clear mark
 	Main.prototype.levelMark = 0;
 	Main.prototype.totalMark = 0;
@@ -331,6 +705,10 @@ Main.prototype.gamePass = function(){
 Main.prototype.showMessage = function(message){
 	var obj = document.getElementById("message");
 	obj.innerHTML = message;	
+};
+Main.prototype.appendMessage = function(message){
+	var obj = document.getElementById("message");
+	obj.innerHTML = obj.innerHTML + message;	
 };
 //各种游戏音效
 //菜单点击

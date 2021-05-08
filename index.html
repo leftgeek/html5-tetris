@@ -12,7 +12,7 @@
 		<script type="text/javascript" src="js/tetris.js"></script>
 		<script type="text/javascript" src="js/letter.js"></script>
 		<script type="text/javascript" src="js/main.js"></script>
-		<title>HTML5-俄罗斯方块游戏</title>
+		<title>AI俄罗斯方块游戏-HTML5&nbsp;-&nbsp;LeftGeek</title>
 		<script type="text/javascript">
 			var main = new Main();
 			var isStart = false;
@@ -20,16 +20,24 @@
 			function gameInit(){
 				main.init();
 			}
-			function gameStart(){
+			function gameStart(enable_ai){
 				main.playClick();
 				if (isStart){//stop
 					isStart = false;
 					main.gameEnd();
 					document.getElementById("menu_start").innerHTML = "Start";
+					document.getElementById("menu_start_ai").innerHTML = "AI";
 				} else {//start
 					isStart = true;
-					main.gameStart();
-					document.getElementById("menu_start").innerHTML = "End";
+          if (enable_ai == 1){
+            main.gameStart(1);
+            document.getElementById("menu_start_ai").innerHTML = "End";
+            document.getElementById("menu_start").innerHTML = "";
+          } else {
+            main.gameStart(0);
+            document.getElementById("menu_start").innerHTML = "End";
+            document.getElementById("menu_start_ai").innerHTML = "";
+          }
 				}
 			}
 			function gamePause(){
@@ -55,11 +63,12 @@
           &nbsp;&nbsp;&nbsp;Fun~</b>
 				</div>
 				<ul id="menu">
-					<li><a id="menu_start" href="javascript:void(0)" onclick="gameStart()">Start</a></li>
+					<li><a id="menu_start" href="javascript:void(0)" onclick="gameStart(0)">Start</a>
+            <a id="menu_start_ai" href="javascript:void(0)" onclick="gameStart(1)">AI</a></li>
 					<li><a id="menu_pause" href="javascript:void(0)" onclick="gamePause()">Pause</a></li>
-					<li><a id="menu_pause" href="javascript:void(0)"
+					<li><a id="menu_about" href="javascript:void(0)"
 						title="HTML5俄罗斯方块游戏 - 余亚/2014/2/14">About</a></li>
-					<li><a id="menu_pause" href="/"
+					<li><a id="menu_home" href="/"
 						title="Goto leftgeek.com">Home</a></li>
 				</ul>
 				<div id="game_control">

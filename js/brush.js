@@ -3,7 +3,8 @@ function Brush(){}
 //sideLength为画的单位方块的边长
 Brush.prototype.context = null;
 Brush.prototype.sideLength = 10;
-Brush.prototype.backColor = "#999999";
+//Brush.prototype.backColor = "#999999";
+Brush.prototype.backColor = "#666";
 
 Brush.prototype.init = function(canvasId, sideLength, backColor){
 	var canvas = document.getElementById(canvasId);
@@ -30,7 +31,7 @@ Brush.prototype.setProperty = function(property){
 		case 0:
 			this.context.fillStyle = this.backColor;
 			break;
-		case 1:
+/*    case 1:
 			this.context.fillStyle = "#FF4719";
 			break;
 		case 2:
@@ -43,7 +44,21 @@ Brush.prototype.setProperty = function(property){
 			this.context.fillStyle = "#75D119";
 			break;
 		default:
-			this.context.fillStyle = "#FF4719";
+			this.context.fillStyle = "#FF4719";*/
+		case 1:
+			this.context.fillStyle = "#DF5A37";
+			break;
+		case 2:
+			this.context.fillStyle = "#F6C646";
+			break;
+		case 3:
+			this.context.fillStyle = "#50B1B3";
+			break;
+		case 4:
+			this.context.fillStyle = "#87C15E";
+			break;
+		default:
+			this.context.fillStyle = "#DF5A37";
 			break;
 	}
 };

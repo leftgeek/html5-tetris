@@ -1,6 +1,7 @@
 function Map(){}
 Map.prototype.rowCount = 0;
 Map.prototype.colCount = 0;
+Map.prototype.rowBlockCount = new Array();//每一行的格子数量
 Map.prototype.matrix = new Array();
 
 Map.prototype.getRowCount = function(){
@@ -39,6 +40,7 @@ Map.prototype.init = function(rowCount, colCount){
 		for (col = 0; col < this.colCount; col++){
 			Map.prototype.matrix[row][col] = 0;
 		}
+    Map.prototype.rowBlockCount[row] = 0;
 	}
 };
 

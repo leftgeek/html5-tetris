@@ -7,6 +7,7 @@ html, body{
 body{
 	background-image: url('../images/bg.png');
 	background-repeat: repeat;	
+  background-color: #EEE;
 }
 .left{
 	float: left;
@@ -22,12 +23,12 @@ body{
 	width: 150px;
 	margin: 0px;
 	padding: 0px;
-	background-color: #333333;
+	background-color: #444;
 	position: fixed;
 	left: 0;
 	top: 0;
 	height: 100%;
-	box-shadow: 2px 0px 10px #333333;
+	box-shadow: 2px 0px 10px #555;
 }
 #welcome{
 	color: #FFE019;
@@ -45,8 +46,10 @@ body{
 	padding: 0px;	
 }
 #menu li{
+  color: #FFF;
+  clear: both;
 	margin: 0px;
-	padding: 0px;	
+	padding: 0px 10px 0px 0px;	
 	border-bottom: 2px solid #999999;
 }
 #menu li:hover{
@@ -54,14 +57,15 @@ body{
 }
 #menu a{
 	display: block;
-	width: 140px;
+  float: right;
 	height: 45px;
 	font-size: 30px;
 	font-family: 'Comic Sans MS';
 	line-height: 45px;
 	padding: 2px 10px 2px 0px;
 	font-weight: bold;
-	text-align: right;
+	text-align: left;
+  border-right: 1px;
 }
 #menu a,
 #menu a:active,
@@ -75,6 +79,7 @@ body{
 	color: #FFE019;	
 }
 #game_control{
+  clear: both;
 	color: #19A3FF;
 	width: 140px;
 	padding: 2px 10px 2px 0px;
@@ -104,14 +109,14 @@ body{
 	height: 112px;
 	margin-left: 112px;
 	padding: 5px 5px 0px 5px;
-	background-color: #DDDDDD;
+	background-color: #EEE;
 	border-radius: 10px 10px 0px 0px;
 	box-shadow: 0px 2px 10px #333333;
 }
 #main{
 	width: 336px;
 	height: 504px;
-	background-color: #DDDDDD;
+	background-color: #E5E5E5;
 	padding: 5px 5px 5px 5px;
 	margin-top: -5px;
 	border-radius: 10px;
@@ -121,7 +126,7 @@ body{
 	width: 600px;
 	height: 480px;
 	padding: 5px;
-	background-color: #DDDDDD;
+	background-color: #E5E5E5;
 	border-radius: 10px;
 	box-shadow: 0px 0px 10px #333333;
 }
@@ -130,27 +135,27 @@ body{
 	height: 115px;
 	margin-top: 10px;
 	padding: 5px;
-	background-color: #DDDDDD;
+	background-color: #E5E5E5;
 	border-radius: 10px;
 	box-shadow: 0px 0px 10px #333333;
 }
 #message{
-	color: #FFFFFF;
+	color: #333;
 	font-size: 20px;
 	padding: 5px;
 	font-family: 'Comic Sans MS';
 	line-height: 24px;
-	background-color: #999999;
+	background-color: #BBB;
 	width: 590px;
 	height: 105px;
 }
 #board{
-	background-color: #999999;
+	background-color: #BBB;
 }
 #preview{
-	background-color: #999999;
+	background-color: #BBB;
 }
 #paper{
-	background-color: #999999;
+	background-color: #BBB;
   padding: 10px 10px 10px 10px;
 }
