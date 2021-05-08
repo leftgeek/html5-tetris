@@ -104,16 +104,54 @@ body{
 	margin: 5px 0px 0px 0px;
 }
 
-#header{
+#header {
+  width: 336px;
+  height: 112px;
+	padding: 0px 5px 0px 5px;
+}
+#time_board{
+  width: 100px;
+  height: 100px;
+  float: left;
+  margin: 5px 5px 0px 2px;
+  padding: 5px 0px 0px 0px;
+  color: #F5F5F5;
+  background-color: #50B1B3;
+	box-shadow: 0px 2px 10px #333333;
+}
+#score_board{
+  width: 100px;
+  height: 100px;
+  float: left;
+  margin: 5px 0px 0px 5px;
+  padding: 5px 0px 0px 0px;
+  color: #F5F5F5;
+  background-color: #87C15E;
+	box-shadow: 0px 2px 10px #333333;
+}
+
+.tag_title{
+  height: 50px;
+  text-align: center;
+  font-size: 25px;
+}
+.tag_content{
+  height: 50px;
+  text-align: center;
+  font-size: 30px;
+}
+
+#preview_board{
+  float: left;
 	width: 112px;
 	height: 112px;
-	margin-left: 112px;
 	padding: 5px 5px 0px 5px;
 	background-color: #EEE;
 	border-radius: 10px 10px 0px 0px;
 	box-shadow: 0px 2px 10px #333333;
 }
 #main{
+  clear: both;
 	width: 336px;
 	height: 504px;
 	background-color: #E5E5E5;

@@ -12,7 +12,7 @@
 		<script type="text/javascript" src="js/tetris.js"></script>
 		<script type="text/javascript" src="js/letter.js"></script>
 		<script type="text/javascript" src="js/main.js"></script>
-		<title>AI俄罗斯方块游戏-HTML5&nbsp;-&nbsp;LeftGeek</title>
+		<title>俄罗斯方块游戏-HTML5&nbsp;-&nbsp;LeftGeek</title>
 		<script type="text/javascript">
 			var main = new Main();
 			var isStart = false;
@@ -91,7 +91,17 @@
 			<div id="wrapper">
 				<div id="game_board" class="left">
 					<div id="header">
+            <div id="time_board">
+              <div class="tag_title">Time</div>
+              <div class="tag_content" id="elapsed_time">0</div>
+            </div>
+            <div id="preview_board">
 						<canvas id="preview" width="112" height="112"></canvas>
+            </div>
+            <div id="score_board">
+              <div class="tag_title">Score</div>
+              <div class="tag_content" id="cleared_lines">0</div>
+            </div>
 					</div>
 					<div id="main">
 						<canvas id="board" width="336" height="504"></canvas>

@@ -29,6 +29,8 @@ Main.prototype.nextTetris = new Array();//下一个方块
 Main.prototype.timer = null;//定时器
 Main.prototype.levelMark = 0;//分数
 Main.prototype.totalMark = 0;//总分数
+Main.prototype.totalClearedLines = 0;//总消去的行数
+Main.prototype.totalElapsedTime = 0;//总时间
 
 Main.prototype.init = function(){
 	//注册键盘处理函数
@@ -542,6 +544,8 @@ Main.prototype.canDrop = function(){
 //方块下落
 Main.prototype.drop = function(){
 	if (!Main.prototype.gameStop){
+    Main.prototype.totalElapsedTime++;
+    this.document.getElementById("elapsed_time").innerHTML = Main.prototype.totalElapsedTime;
     if (Main.prototype.enableAI){
       if (Main.prototype.cy >= 0){
         if (Main.prototype.currentState != Main.prototype.AITargetTetrisState){
@@ -562,7 +566,7 @@ Main.prototype.drop = function(){
         for (var i = Main.prototype.cy; i < 0; i++){
           Main.prototype.moveDown();
         }
-    }
+      }
     } else {
       Main.prototype.moveDown();
     }
@@ -601,6 +605,8 @@ Main.prototype.checkClear = function(){
 				this.showMessage("干得漂亮！");
 				Main.prototype.levelMark++;//get a mark
 				this.checkLevelUp();
+        Main.prototype.totalClearedLines++;
+        document.getElementById("cleared_lines").innerHTML = Main.prototype.totalClearedLines;
 			}
 		}
 	}
@@ -676,6 +682,8 @@ Main.prototype.gameStart = function(enable_ai){
 	//clear mark
 	Main.prototype.levelMark = 0;
 	Main.prototype.totalMark = 0;
+  Main.prototype.totalClearedLines = 0;
+  Main.prototype.totalElapsedTime = 0;
 	//clear the message and letters
 	this.newTetris();
 	Main.prototype.timer = setInterval(this.drop, this.speed);
