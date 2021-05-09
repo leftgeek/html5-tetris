@@ -17,9 +17,7 @@
 			var main = new Main();
 			var isStart = false;
 			var isPause = false;
-			function gameInit(){
-				main.init();
-			}
+
 			function gameStart(enable_ai){
 				main.playClick();
 				if (isStart){//stop
@@ -53,6 +51,24 @@
 					document.getElementById("menu_pause").innerHTML = "Resume";
 				}
 			}
+      function gameInit(){
+				main.init();
+        //setTimeout("gameStart(1)", 30000);
+        /*
+          //start at certain time
+          var executed = false;
+          var timeTask = setInterval(function(){
+          gameStart(1);
+          var date = new Date();
+          var h = date.getHours();
+          var m = date.getMinutes();
+          var s = date.getSeconds();
+          if (h == 20 && m == 7 && s == 0 && !executed){
+            executed = true;
+            gameStart(1);
+          }
+        }, 1000);*/
+      }
 		</script>
 	</head>
 	<body onload="gameInit()">
@@ -64,7 +80,7 @@
 				</div>
 				<ul id="menu">
 					<li><a id="menu_start" href="javascript:void(0)" onclick="gameStart(0)">Start</a>
-            <a id="menu_start_ai" href="javascript:void(0)" onclick="gameStart(1)">AI</a></li>
+          <a id="menu_start_ai" href="javascript:void(0)" onclick="gameStart(1)">AI</a></li>
 					<li><a id="menu_pause" href="javascript:void(0)" onclick="gamePause()">Pause</a></li>
 					<li><a id="menu_about" href="javascript:void(0)"
 						title="HTML5俄罗斯方块游戏 - 余亚/2014/2/14">About</a></li>

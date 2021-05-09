@@ -2,6 +2,7 @@ function Map(){}
 Map.prototype.rowCount = 0;
 Map.prototype.colCount = 0;
 Map.prototype.rowBlockCount = new Array();//每一行的格子数量
+Map.prototype.colBadBlockCount = new Array();//每一列的坏格子数量
 Map.prototype.matrix = new Array();
 
 Map.prototype.getRowCount = function(){
@@ -42,6 +43,9 @@ Map.prototype.init = function(rowCount, colCount){
 		}
     Map.prototype.rowBlockCount[row] = 0;
 	}
+  for (col = 0; col < this.colCount; col++){
+    Map.prototype.colBadBlockCount[col] = 0;
+  }
 };
 
 Map.prototype.clean = function(){
